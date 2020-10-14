@@ -27,7 +27,7 @@ jobs:
         uses: docker://iquiw/alpine-emacs
         if: github.event.deleted == false
         with:
-          args: make 
+          args: apk add make && make
       
           
       - name: deploy
