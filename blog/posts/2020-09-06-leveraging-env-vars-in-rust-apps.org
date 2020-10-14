@@ -2,7 +2,6 @@
 #+date: <2020-09-06 Sun>
 #+author: Peter Tillemans
 #+email: pti@snamellit.com
-#+SETUPFILE: ../org-template/style.org
 
 Environment variable have gained a lot of importance since the rise of
 the container based deployments and (consequently) the popularity of the

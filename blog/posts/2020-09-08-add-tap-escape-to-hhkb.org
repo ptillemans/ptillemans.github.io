@@ -2,7 +2,6 @@
 #+date: <2020-09-08 Tue>
 #+author: Peter Tillemans
 #+email: pti@snamellit.com
-#+SETUPFILE: ../org-template/style.org
 
 I configure all apps I can to use /vim/ keybindings. Which means I use
 the /Escape/ key very often.

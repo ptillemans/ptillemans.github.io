@@ -2,7 +2,6 @@
 #+date: <2020-09-08 Tue>
 #+author: Peter Tillemans
 #+email: pti@snamellit.com
-#+SETUPFILE: ../org-template/style.org
 
 I have some latex templates to format documents to create fancy formal
 looking PDF versions of my plaintext mode documents I create in

@@ -2,7 +2,6 @@
 #+date: <2020-09-04 Fri>
 #+author: Peter Tillemans
 #+email: pti@snamellit.com
-#+SETUPFILE: ../org-template/style.org
 
 There are essentially 2 methods for compiling Gtk apps
 

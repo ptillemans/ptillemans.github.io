@@ -18,6 +18,10 @@ publish_no_init:
 
 clean:
 	@echo "Cleaning up..."
+	rm -rf public
+	@rm -rvf *.elc
+	@rm -rvf public
+	@rm -rvf ~/.org-timestamps/*
 
 serve: publish
 	@echo "Serving site"

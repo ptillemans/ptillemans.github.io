@@ -1,0 +1,7 @@
+#+TITLE: Blog Index
+
+- [[file:sitemap.org][sitemap]]
+- [[file:2020-09-08-install-latex-in-windows.org][Install Latex in Windows]]
+- [[file:2020-09-08-add-tap-escape-to-hhkb.org][Add Tap Escape to HHKB on Windows]]
+- [[file:2020-09-06-leveraging-env-vars-in-rust-apps.org][Leveraging Environment Variables in Rust Apps]]
+- [[file:2020-09-04-relm-on-windows.org][Rust and Gtk on Windows]]
