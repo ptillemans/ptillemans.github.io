@@ -1,0 +1,95 @@
+#+title: Leveraging Environment Variables in Rust Apps
+#+date: <2020-09-06 Sun>
+#+author: Peter Tillemans
+#+email: pti@snamellit.com
+#+SETUPFILE: ../org-template/style.org
+
+Environment variable have gained a lot of importance since the rise of
+the container based deployments and (consequently) the popularity of the
+[[https://12factor.net/][12 factor app]].
+
+It also has become very practical with the widespread support of the
+/.env/ file in the project folder which makes configuring apps during
+development very practical.
+
+* Using environment in Rust
+  :PROPERTIES:
+  :CUSTOM_ID: using-environment-in-rust
+  :END:
+
+The [[https://doc.rust-lang.org/std/env/index.html][std::env]] package
+gives access to the environment variables, and also information about
+the working directory, the location of the program executing, temp
+folder, etc...
+
+The method we really are interested in is
+[[https://doc.rust-lang.org/std/env/fn.var.html][var]].
+
+#+BEGIN_EXAMPLE
+  match env::var("MQTT_BROKER") {
+      Ok(mqtt_broker) => mqtt_init(&mqtt_broker).await,
+      Err(e) => error!("No broker specified in MQTT_BROKER environment variable.({})", e)
+  }
+#+END_EXAMPLE
+
+It returns a /Result<String, VarError>/ which we can easily pattern
+match on and give readable feedback to the user.
+
+I thing this is perfectly fine for simple, small apps I am likely to
+write in the foreseeable future.
+
+* Controlling Logging from the Environment
+  :PROPERTIES:
+  :CUSTOM_ID: controlling-logging-from-the-environment
+  :END:
+
+Another thing needed for smallisch apps is a logging system with the
+following requirements:
+
+- Controllable via environment
+- Add a timestamp
+- Output to stdout or stderr (a 12 factor thing)
+- Namespace modules
+- Override config for specific modules
+
+Rust has a standard logging API defined in the
+[[https://docs.rs/log/0.4.11/log/][log crate]] crate for which a large
+selection of implementations is available.
+
+The first one on the
+[[https://docs.rs/log/0.4.11/log/#available-logging-implementations][list
+with implementations]] fit all my requirements, so that's fine.
+
+All we need to do is initialize it after reading the environment
+variables from the /.env/ file :
+
+#+BEGIN_EXAMPLE
+  async fn main() {
+      dotenv::dotenv().ok();
+      env_logger::init();
+      ...
+#+END_EXAMPLE
+
+and we are logging using the standard =debug!=, =info!=, =warn!=, ...
+macros.
+
+* Scaling to larger apps
+  :PROPERTIES:
+  :CUSTOM_ID: scaling-to-larger-apps
+  :END:
+
+When apps grow (or just when they live long enough) they tend to
+accumulate config options and layers of modules making logging also a
+headache.
+
+When confronted with these issues I saw that the /config/ and /envy/
+crates offer nice layered configuration support and straightforward
+pouring in type safe structs.
+
+Similarly there are more flexible, and consequently more complex,
+logging frameworks like /log4rs/. There are also structured logging
+libraries but I still need to see how these can work in containers
+without adding additional hoops to jump through.
+
+Let's hope my apps stay small and simple and do not need this additional
+complexity.

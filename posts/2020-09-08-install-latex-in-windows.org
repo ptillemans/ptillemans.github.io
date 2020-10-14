@@ -1,0 +1,149 @@
+#+title: Install Latex in Windows
+#+date: <2020-09-08 Tue>
+#+author: Peter Tillemans
+#+email: pti@snamellit.com
+#+SETUPFILE: ../org-template/style.org
+
+I have some latex templates to format documents to create fancy formal
+looking PDF versions of my plaintext mode documents I create in
+/org-mode/ in /emacs/, well /spacemacs/ actually.
+
+* Installation
+
+Since this are tools built in the UNIX world I expected a protracted
+battle before I got all settings right, especially since there was no
+version of Live Tex in the chocolatey repositories. I never tried MikTex
+before.
+
+** Installing MikTex
+   :PROPERTIES:
+   :CUSTOM_ID: installing-miktex
+   :END:
+
+That is easy, in an admin shell run :
+
+#+BEGIN_EXAMPLE
+  > choco install miktex
+#+END_EXAMPLE
+
+This will take a bit so we can already fetch the templates.
+
+** Installing the custom LaTeX templates
+   :PROPERTIES:
+   :CUSTOM_ID: installing-the-custom-latex-templates
+   :END:
+
+I keep my templates in git repositories for easy updating. Some are
+shared with others so new features are sometimes added. Let's make a
+place for these
+
+In the msys terminal :
+
+#+BEGIN_EXAMPLE
+  $ cd
+  $ mkdir -p .local/texmf/tex/latex
+#+END_EXAMPLE
+
+I want to use the /.local/texmf/ as the local extension folder, but
+/MikTex/ will not allow to select it if the /tex/latex/ folders are
+missing. Also this is consistent with the Mac and Linux versions.
+
+** Installing the custom templates
+   :PROPERTIES:
+   :CUSTOM_ID: installing-the-custom-templates
+   :END:
+
+Just add the repos for the /.sty/ and /.cls/ files to the folder we just
+made:
+
+#+BEGIN_EXAMPLE
+  $ cd ~/.local/texmf/tex/latex
+  $ git clone git@gitlab.xomeplace.com:latex/xomeplace-latex.git
+  $ ... repeat for other templates ...
+#+END_EXAMPLE
+
+** Configuring MikTex
+   :PROPERTIES:
+   :CUSTOM_ID: configuring-miktex
+   :END:
+
+After installation look for MikTex in the /Start Menu/ to start the
+config tool. It will complain that no update has been done yes, so I
+humoured it by updating, none are available since it is just installed,
+but it keeps regularly reminding me to update. I assume this'll go away
+once some update arrives.
+
+Add the /texmf/ folder we created :
+
+- Press the '+' icon
+- Navigate the ~/.local/texmf
+- Confirm
+
+Keep the tool open because we need to copy the location of the /bin/
+folder in the next step.
+
+## Add the TeX tools to the PATH
+
+I only use the TeX tools from Spacemacs so I'll just add it there. The
+Spacemacs dev team decided to make the environment variables, including
+the path, load from a config file. Having been at the receiving end of
+the confusion which follows from the subtle differences when launching
+/Emacs/ as daemon, from the GUI menu or from the command line, I
+heartily applaud this approach.
+
+In any case I just update the PATH in /Spacemacs/
+
+- Space f e e (to open the environment config file)
+- find the line with PATH= ( /'/' PATH Enter, maybe some /n* to find the
+  one)
+- Copy the location from the config tool
+- Paste it in the PATH value (do not forget the ';' separator)
+- Esc : w (to save changes)
+- Space f e E (to reload the new value)
+
+* Using it
+  :PROPERTIES:
+  :CUSTOM_ID: using-it
+  :END:
+
+Well nothing new here, it kind of just works:
+
+** Creating a PDF
+   :PROPERTIES:
+   :CUSTOM_ID: creating-a-pdf
+   :END:
+
+Open an org file with the /LaTeX headers/ or add them with /, e e #/ and
+select latex from the list. Check the /LATEX_CLASS/ is one of the custom
+classes.
+
+Then /, e e l o/ and ... nothing will happen, ..., well emacs tells it
+is busy with the texfile. It takes a while, taskmaster shows processes
+blinking in and of existence under the Emacs process. I assume MikTex is
+compiling stuff in the background of first use.
+
+Eventually it returns stating PDF export failed and to consult the log
+file.
+
+** Fix Errors
+   :PROPERTIES:
+   :CUSTOM_ID: fix-errors
+   :END:
+
+The end of the logfile showed scary things of not being able to write.
+Let's ignore those for now : I learned to treat the first errors in the
+LaTeX log output first, and retry and move my way down the log till
+there are no more errors.
+
+First Error : 'Libertine Font' was not found, a bit further the same
+with 'Lato'.
+
+Download the fonts, unzip, select all /.ttf/ files and right-click
+install.
+
+Try again and the PDF opens ... in the Edge Browser ??? And the Edge
+Browser attached itself to the taskbar??? Again??? I need to tackle that
+some time.
+
+Well, it works. Take the document and send it to those you wanted to
+impress.
