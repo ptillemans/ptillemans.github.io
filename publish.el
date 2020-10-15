@@ -19,8 +19,9 @@
 ;;
 ;;; Code:
 
+(setq load-path (cons "./elisp" load-path))
+(require 'htmlize)
 (require 'ox-publish)
-
 
 (setq website-html-head "<link rel=\"stylesheet\" href=\"css/site.css\"
   type=\"text/css\"/>")
@@ -29,9 +30,7 @@
       "<div class=\"nav\">
 <ul>
 <li><a href=\"/\">Home</a></li>
-<li><a href=\"/static/about.html\">About</a></li>
 <li><a href=\"https://github.com/ptillemans\">GitHub</a></li>
-<li><a href=\"/index.xml\">RSS</a></li>
 </ul>
 </div>")
 
@@ -40,12 +39,15 @@
 
 (setq org-publish-project-alist
       `(("posts"
+
+         ;; configure project structure
          :base-directory "blog/posts/"
          :base-extension "org"
          :publishing-directory "public/"
          :recursive t
          :publishing-function org-html-publish-to-html
 
+         ;; configure index creation
          :auto-sitemap t
          :sitemap-title "Blog Index"
          :sitemap-filename "index.org"
@@ -56,28 +58,27 @@
          :html-doctype "html5"
          :html-html5-fancy t
          :html-head ,website-html-head
-         :html-head-extra
-         "<link rel=\"alternate\" type=\"application/rss+xml\"
-                href=\"https://rkallos.com/posts.xml\"
-                title=\"RSS feed\">"
          :html-preamble ,website-html-preamble
          :html-postamble ,website-html-postamble
 
          :author "Peter Tillemans"
          :email "pti@snamellit.com"
          :with-creator t)
+
         ("blog-static"
          :base-directory "blog/posts/"
          :base-extension "png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
          :publishing-directory "public_html/"
          :recursive t
          :publishing-function org-publish-attachment)
+
         ("css"
          :base-directory "blog/css/"
          :base-extension "css"
          :publishing-directory "public/css"
          :publishing-function org-publish-attachment
          :recursive t)
+
         ("all" :components ("posts" "css" "blog-static"))))
 
 

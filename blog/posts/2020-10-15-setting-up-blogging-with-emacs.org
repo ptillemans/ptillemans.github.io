@@ -1,0 +1,271 @@
+#+title: Setting up Blogging with Emacs
+#+date: 2020-10-15
+
+I'd like to blog more notes on stuff I do and it would be nice to have
+a smooth workflow in my editor of choice.
+
+It is too late to explain a lot, but all these things were proudly found
+elsewhere. See the references list at the end of this post.
+
+* Creating the blog project
+
+To deploy to github as a personal blog you have to create a repo in the form
+*<username>.github.io*. Since I name my projects the same as the repos the
+name was a quick choice.
+
+The structure is as follows:
+
+#+BEGIN_SRC text
+<root> -+- blog -+- posts -+- <blog posts>
+        |        +- org-template -+- <templates>
+        |        +- css -+- <css files>
+        +- public -+- <built website>
+        +- .github -+- workflow --- main.yml  <github actions>
+        +- publish.el
+        +- Makefile  <local develop actions>
+
+
+#+END_SRC
+
+* Configuring org-publish
+
+This is what the *publish.el* file is for.
+
+Prepare some snippets for the HTML pages
+
+First off, a link to the CSS:
+
+#+BEGIN_SRC elisp
+(setq website-html-head "<link rel=\"stylesheet\" href=\"css/site.css\"
+  type=\"text/css\"/>")
+#+END_SRC
+
+Let's also add a navigation menu at the top of each page:
+
+#+BEGIN_SRC elisp
+(setq website-html-preamble
+      "<div class=\"nav\">
+<ul>
+<li><a href=\"/\">Home</a></li>
+<li><a href=\"https://github.com/ptillemans\">GitHub</a></li>
+</ul>
+</div>")
+#+END_SRC
+
+And a footer :
+
+#+BEGIN_SRC elisp
+(setq website-html-postamble "<div class=\"footer\"> Copyright 2020 %a (%v
+  HTML).<br> Last updated %C.<br> Built with %c.  </div>")
+#+END_SRC
+
+And now we can all tie it together by creating the *org-publish-project-alist*:
+
+#+BEGIN_SRC elisp
+(setq org-publish-project-alist
+      `(("posts"
+
+         ;; configure project structure
+         :base-directory "blog/posts/"
+         :base-extension "org"
+         :publishing-directory "public/"
+         :recursive t
+         :publishing-function org-html-publish-to-html
+
+         ;; configure index creation
+         :auto-sitemap t
+         :sitemap-title "Blog Index"
+         :sitemap-filename "index.org"
+         :sitemap-style tree
+         :sitemap-file-entry-format "%d - %t"
+         :sitemap-sort-files anti-chronologically
+
+         :html-doctype "html5"
+         :html-html5-fancy t
+         :html-head ,website-html-head
+         :html-preamble ,website-html-preamble
+         :html-postamble ,website-html-postamble
+
+         :author "Peter Tillemans"
+         :email "pti@snamellit.com"
+         :with-creator t)
+
+        ("blog-static"
+         :base-directory "blog/posts/"
+         :base-extension "png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+         :publishing-directory "public_html/"
+         :recursive t
+         :publishing-function org-publish-attachment)
+
+        ("css"
+         :base-directory "blog/css/"
+         :base-extension "css"
+         :publishing-directory "public/css"
+         :publishing-function org-publish-attachment
+         :recursive t)
+
+        ("all" :components ("posts" "css" "blog-static"))))
+#+END_SRC
+
+* Make local testing easy
+
+The commands to build the blog are not hard, but hard to remember
+and hard to type.
+
+Let's make a makefile to help:
+
+#+BEGIN_SRC makefile
+.PHONY: all publish publish_no_init
+
+all: publish
+
+publish: publish.el
+	@echo "Publishing... with current Emacs configurations."
+	emacs --batch --load publish.el --funcall org-publish-all
+
+publish_no_init:
+	@echo "Publishing... with --no-init"
+	emacs --batch --no-init --load publish.el --funcall org-publish-all
+
+clean:
+	@echo "Cleaning up..."
+	rm -rf public
+	@rm -rvf *.elc
+	@rm -rvf public
+	@rm -rvf ~/.org-timestamps/*
+
+serve: publish
+	@echo "Serving site"
+	python -m http.server --directory public
+#+END_SRC
+
+For local testing just do:
+
+#+BEGIN_SRC shell
+$ make clean serve
+#+END_SRC
+
+If the only change is new content then not cleaning is much faster.
+
+* Deploy to Github Pages
+
+A slightly modified version of the initial workflow will do the publishing:
+
+#+BEGIN_SRC yaml
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: build
+        uses: docker://iquiw/alpine-emacs
+        if: github.event.deleted == false
+        with:
+          args: emacs --batch --load publish.el --funcall org-publish-all
+
+
+      - name: deploy
+        uses: peaceiris/actions-gh-pages@v1.1.0
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./public
+#+END_SRC
+
+Note that you need to put a secret *PERSONAL_ACCESS_TOKEN* with an access token which has basic push access to the repo to push the built site to the gh-pages branch.
+
+For the emacs call, I just copied the command from the *Makefile*.
+
+After a push the site is usually up by the time I check, say in about a minute.
+
+* Setting up a Capture Template
+
+This proved to be the hardest part to get working.
+
+I am using *Doom Emacs* so I wrap everything in *with-eval-after-load*.
+
+The challenge was that the title is needed to create the slug for the filename and then again as title for the post. So my ugly solution is to stuff it in a variable and get the variable back in the template.
+
+#+BEGIN_SRC elisp
+(with-eval-after-load 'org-capture
+  (defvar snamellit/blog-title "test-title")
+
+  (setq snamellit-blog-template "#+title: %(progn snamellit-blog-title)
+,#+date: %t
+,#+author: Peter Tillemans
+,#+email: pti@snamellit.com
+
+%?")
+
+  (defun snamellit/capture-blog-post-file ()
+    (let* ((title (read-from-minibuffer "Post Title: "))
+           (slug (replace-regexp-in-string "[^a-z0-9]+" "-" (downcase title))))
+      (setq snamellit/blog-title title)
+      (format "~/Projects/ptillemans.github.io/blog/posts/%s-%s.org"
+              (format-time-string "%Y-%m-%d" (current-time))
+              slug)))
+
+  (add-to-list 'org-capture-templates
+               '("b" "Blog Post" plain
+                 (file snamellit/capture-blog-post-file)
+                 (file "~/.doom.d/tpl-blog-post.org"))))
+
+#+END_SRC
+
+The *tpl-blog-post.org* template file :
+
+#+BEGIN_SRC org
+#+title: %(progn snamellit/blog-title)
+#+date: %<%Y-%m-%d>
+
+%?
+#+END_SRC
+
+It is very minimal and I'd like to keep it that way.
+
+* In use
+
+To create a blog post
+- SPC-X b   will create the post
+- Give a title for the post
+- A template file is created (unfortunately in plain text)
+- Enter the idea, hook and save with C-c C-c
+- Open the org file with SPC-f r (open recent file)
+- Flesh out the post using org-mode goodness
+- save, commit and push to git
+
+After push the github action will bring it live
+
+* References
+
+Following links were useful in setting this up:
+
+- [[https://opensource.com/article/20/3/blog-emacs][How to blog with Emacs Org mode]]
+- [[https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/about-github-pages][GitHub Pages documentation]]
+- [[https://orgmode.org/org.html][The Org Mode Manual]]
+- [[https://meganrenae21.github.io/Meg-in-Progress/posts/blogging-with-org-mode.html][The Meg in Progress post on building a static blog with org-mode.]]
+- [[https://thenybble.de/projects/orgsite.html][Website with org-mode]]
+- [[https://rkallos.com/blog/2017/01/02/static-site-generation-with-org-mode/][Richard Kallos' post on site generation with Org Mode]]
+- [[https://www.brautaset.org/articles/2017/blogging-with-org-mode.html][Blogging with Org mode]]
+- [[https://storax.github.io/blog/2016/05/02/org-capture-tricks/][Org Capture Tricks from Storax]]

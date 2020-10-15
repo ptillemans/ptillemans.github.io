@@ -1,5 +1,6 @@
 #+TITLE: Blog Index
 
+- [[file:2020-10-15-setting-up-blogging-with-emacs.org][Setting up Blogging with Emacs]]
 - [[file:sitemap.org][sitemap]]
 - [[file:2020-09-08-install-latex-in-windows.org][Install Latex in Windows]]
 - [[file:2020-09-08-add-tap-escape-to-hhkb.org][Add Tap Escape to HHKB on Windows]]
