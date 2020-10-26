@@ -1,0 +1,73 @@
+#+title: Access NAS drive using Windows10 PIN login
+#+date: 2020-10-26
+
+Each time I login using the PIN of my Microsoft account, my mounted folders on the NAS are not mounted. After login I get a notification that not all mounted drives could be connected.  When double clicking on the failed mount I get a silly error regarding duplicate sessions or something, and I can access after logging in.
+
+This is irritating, but also breaks automations like auto importing notes and documents into evernote from the NAS folder.
+
+
+* Attempt 1
+
+This seems to be a known issue with PIN (and by extension face recognition (?)) login.
+
+On Windows answers I found a [[https://answers.microsoft.com/en-us/windows/forum/all/unable-to-access-nas-drive-when-logged-in-using/3587cf33-7ed9-403f-ac7c-d4158969412d][workaround]] :
+
+ - Open the *Credential Manager*
+ - Select *Windows Credential*
+ - *Add a Windows Credential* (it will actually modify the existing one)
+ - network address : \\ _your NAS_
+ - User name : _your NAS_\pti
+ - Password : _your password on the NAS_
+
+From now on your drive should be mounted after rebooting.
+
+Unfortunately, it does not.
+
+Removing and adding again does not help either.
+
+* Attempt 2 : remap network drives on login
+
+In 2018 [[https://support.microsoft.com/en-us/help/4471218/mapped-network-drive-may-fail-to-reconnect-in-windows-10-version-1809#:~:text=Workaround%201%3A%20Create%20a%20startup%20item&text=If%20the%20device%20has%20not,t%20automatically%20reconnect%20network%20drives.&text=A%20log%20file%20(StartupLog.,to%20open%20the%20mapped%20drives.][another workaround]] was published.
+
+This relies on a powershell script launched by a Command script to walk over
+unavailable mapped drives and map them again.
+
+It uses 2 scripts:
+
+** *%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp\MapDrives.cmd
+
+A startup scrip to kickoff remapping after login
+
+#+BEGIN_SRC shell
+PowerShell -Command "Set-ExecutionPolicy -Scope CurrentUser Unrestricted" >> "%TEMP%\StartupLog.txt" 2>&1
+PowerShell -File "%SystemDrive%\Scripts\MapDrives.ps1" >> "%TEMP%\StartupLog.txt" 2>&1
+#+END_SRC
+
+** %SystemDrive%\Scripts\MapDrives.ps1
+
+#+BEGIN_SRC shell
+$i=3
+while($True){
+    $error.clear()
+    $MappedDrives = Get-SmbMapping |where -property Status -Value Unavailable -EQ | select LocalPath,RemotePath
+    foreach( $MappedDrive in $MappedDrives)
+    {
+        try {
+            New-SmbMapping -LocalPath $MappedDrive.LocalPath -RemotePath $MappedDrive.RemotePath -Persistent $True
+        } catch {
+            Write-Host "There was an error mapping $MappedDrive.RemotePath to $MappedDrive.LocalPath"
+        }
+    }
+    $i = $i - 1
+    if($error.Count -eq 0 -Or $i -eq 0) {break}
+
+    Start-Sleep -Seconds 30
+
+}
+#+END_SRC
+
+** Evaluation
+
+After rebooting and logging in, I still get the error that not all drives could be mounted, however, by the time I can check in the explorer the volume is mounted and ready to be used.
+
+Not very elegant as the notification still feels terribly yanky, but at least it no longer interferes my workflows.
