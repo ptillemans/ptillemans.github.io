@@ -1,0 +1,125 @@
+#+title: Running Emacs with WSL2+xrdp
+#+date: 2021-01-17
+* Why
+
+I have been using Emacs in WSL2 using an X server running in Windows and that works fine as long as long as the computer does not go to sleep. When the computer goes to sleep, the X connection is cut and the emacs process crashes. I like to just have my emacs session available so I can continue where I was last time and I like my computer to go to sleep when I not use it because Global Warming.
+
+
+- start emacs in WSL2 in GUI mode
+- can be reconnected after sleep
+- copy-paste works transparent
+
+* Plan
+
+- use *xrdp* as remote desktop is built into windows
+- configure xrdp to startup in WSL2
+- run emacs in a remote desktop session
+
+
+
+
+
+* Installation
+** Install xrdp
+
+[[https://wiki.archlinux.org/index.php/xrdp][Arch wiki page for xrdp]]
+
+#+begin_src shell
+$ yay -S xrdp xorgxrdp-git
+#+end_src
+
+We do not have systemd in WSL2 so I started the daemons manually
+
+#+begin_src shell
+$ sudo xrdp
+$ sudo xrdp-sesman
+#+end_src
+
+Trying to connect lets me login but after a timeout is shows a dialog box telling me Xorg did not want to start. This is confirmed in the */var/log/xrdp-sesman.log* file.
+
+The root cause is that I cannot read properly because if I could, I would have read to add /allowed_users=anybody/ to the */etc/X11/Xwrapper.config* file to allow *Xorg* to be started by me iso root.
+
+Once that is there I get a nice black screen after login.
+
+Note: Each time WSL2 restarts it gets a random ip address. So I created
+a small script to dig out the actual ip address out of the output of *ip address* :
+
+#+begin_src shell
+#!/bin/bash
+ip address show dev eth0 | grep "inet " | sed -e 's/.*inet \([^/]*\).*/\1/'
+#+end_src
+
+Which I gave the original name of */usr/local/bin/ip-address* so I can easily call it from powershell with ~wsl ip-address~.
+
+
+
+** Installing Xfce4
+
+I'd rather have something more lightweight as window manager, but I have
+experience with Xfce4 in Arch and I also like something which just works.
+
+I only intend to run emacs in the window however having something a bit more capable which works can help me debug the environment. (I have some font things to sort out too...)
+
+#+begin_src shell
+$ sudo pacman -S xfce4
+#+end_src
+
+and then start it form *~/.xinitrc*
+
+#+begin_src shell
+emacs &
+startxfce4
+#+end_src
+
+And this hangs while the *~/.xorgxrdp.log* file is filling up with errors complaining about missing connection to dbus.
+
+** Installing DBUS replacement
+
+#+begin_src shell
+$ yay -S dbus-x11
+#+end_src
+
+allows xfce to feel happy and display the desktop with an emacs window. Now just maximizing the window and the goal is reached.
+
+* Using this from Windows
+
+** Starting from the command-line
+
+We can start remote desktop session using
+
+#+begin_src
+>_ mstsc /v:$(wsl ip-address) /h:2560 /w:1600
+#+end_src
+
+This works, however we get now a prompt to accept the certificate and we still need to login. We can make this smoother
+
+** Accepting the certificate
+
+You can accept the certificate and let remote desktop add it to your certificate stores. This solves this interruption.
+
+However, this still happens each time the ip address changes.
+
+** Automatic login
+
+Start *remote desktop* GUI using the search or from the start menu.
+
+Fill in the ip address returned by ~wsl ip-address~ and your username. Enable the flag to store your password. Login and save the configuration as e.g. *emacs.rdp*.
+
+We can now start emacs using
+
+#+begin_src
+>_ cmdkey /generic:$(wsl ip-address) /user:<username> /pass:<password>
+>_ mstsc /v:$(wsl ip-address)
+#+end_src
+
+We can assemble this is a small script *wsl-emacs.ps1* somewhere on your path:
+
+#+begin_src powershell
+$address = $(wsl ip-address)
+$userName = "pti"
+$userPwd = "shht!Secret"
+cmdkey /generic:$address /user:$userName /pass:$userPwd
+mstsc /v:$address
+#+end_src
+
+Which allows us to start our *wsl-emacs* from powershell or as a startup application with a shortcut.
