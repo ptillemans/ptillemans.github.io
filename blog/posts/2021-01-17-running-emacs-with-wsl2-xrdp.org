@@ -37,7 +37,7 @@ $ sudo xrdp-sesman
 
 Trying to connect lets me login but after a timeout is shows a dialog box telling me Xorg did not want to start. This is confirmed in the */var/log/xrdp-sesman.log* file.
 
-The root cause is that I cannot read properly because if I could, I would have read to add /allowed_users=anybody/ to the */etc/X11/Xwrapper.config* file to allow *Xorg* to be started by me iso root.
+The root cause is that I cannot read properly because if I could, I would have read to add /allowed\_users=anybody/ to the */etc/X11/Xwrapper.config* file to allow *Xorg* to be started by regular users like me instead of only *root*.
 
 Once that is there I get a nice black screen after login.
 
@@ -49,11 +49,30 @@ a small script to dig out the actual ip address out of the output of *ip address
 ip address show dev eth0 | grep "inet " | sed -e 's/.*inet \([^/]*\).*/\1/'
 #+end_src
 
-Which I gave the original name of */usr/local/bin/ip-address* so I can easily call it from powershell with ~wsl ip-address~.
+Which I gave the original name of */usr/local/bin/ip-address* (do not forget to ~chmod +x /usr/local/bin/ip-address~ to make it executable) so I can easily call it from powershell with ~wsl ip-address~.
 
+** Installing DBUS replacement
 
+DBUS is the de-facto GNU/Linux desktop communication bus which glues all kind of GUI apps together. I do not know if it is directly used by Emacs or any of the extensions I use, however it reduces the amount of errors and warnings.
 
-** Installing Xfce4
+#+begin_src shell
+$ yay -S dbus-x11
+#+end_src
+
+allows xfce and other programs to feel happy and display the desktop with an emacs window. Now just maximizing the window and the goal is reached.
+
+** Automatic start of Emacs only
+
+In order to just start emacs maximized in a single remote desktop window we only need to start it as the only program in the XSession. This of course also means there is no chrome on the X-Window or the ability to lauch other programs outside of Emacs. This is exactly how I like it.
+
+#+begin_src shell
+#file:~/.xinitrc
+emacs -mm
+#+end_src
+
+If you rather have a full desktop environment, see further.
+
+** Installing Xfce4 (Optional)
 
 I'd rather have something more lightweight as window manager, but I have
 experience with Xfce4 in Arch and I also like something which just works.
@@ -71,15 +90,7 @@ emacs &
 startxfce4
 #+end_src
 
-And this hangs while the *~/.xorgxrdp.log* file is filling up with errors complaining about missing connection to dbus.
-
-** Installing DBUS replacement
-
-#+begin_src shell
-$ yay -S dbus-x11
-#+end_src
-
-allows xfce to feel happy and display the desktop with an emacs window. Now just maximizing the window and the goal is reached.
+If you have skipped the *DBUS* setup above, this hangs while the *~/.xorgxrdp.log* file is filling up with errors complaining about missing connection to dbus.
 
 * Using this from Windows
 
@@ -123,3 +134,10 @@ mstsc /v:$address
 #+end_src
 
 Which allows us to start our *wsl-emacs* from powershell or as a startup application with a shortcut.
+
+To add a shortcut to the start menu:
+- Type Win-R and open *%AppData%\Microsoft\Windows\Start Menu\Programs*
+- create a new shortcut
+- set as target *powershell.exe "& '<path-of-script>\wsl-emacs.ps1'
+
+Note the weird *"&* on the command-line.
