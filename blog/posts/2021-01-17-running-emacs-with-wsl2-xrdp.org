@@ -28,12 +28,15 @@ I have been using Emacs in WSL2 using an X server running in Windows and that wo
 $ yay -S xrdp xorgxrdp-git
 #+end_src
 
-We do not have systemd in WSL2 so I started the daemons manually
+We do not have systemd in WSL2 so I started the daemons manually with a small script */usr/local/bin/start-xrdp:
 
 #+begin_src shell
-$ sudo xrdp
-$ sudo xrdp-sesman
+#!/bin/bash
+sudo /usr/sbin/xrdp
+sudo /usr/sbin/xrdp-sesman
 #+end_src
+
+We can now start it with *start-xrdp* from the bash command line or using *wsl -u root /usr/local/bin/start-xrdp*. If not running as root (or recently authenticated sudo access) it will ask for your Linux password to allow running as *sudo*.
 
 Trying to connect lets me login but after a timeout is shows a dialog box telling me Xorg did not want to start. This is confirmed in the */var/log/xrdp-sesman.log* file.
 
@@ -126,6 +129,7 @@ We can now start emacs using
 We can assemble this is a small script *wsl-emacs.ps1* somewhere on your path:
 
 #+begin_src powershell
+wsl -u root /usr/local/bin/start-xrdp
 $address = $(wsl ip-address)
 $userName = "pti"
 $userPwd = "shht!Secret"
@@ -133,7 +137,7 @@ cmdkey /generic:$address /user:$userName /pass:$userPwd
 mstsc /v:$address
 #+end_src
 
-Which allows us to start our *wsl-emacs* from powershell or as a startup application with a shortcut.
+Which allows us to start our *wsl-emacs* from powershell or as a startup application with a shortcut. It ensures the *xrdp* daemons are running (they are idempotent, so the script can be run multiple times), then the credentials are created so they can be picked up by remote desktop.
 
 To add a shortcut to the start menu:
 - Type Win-R and open *%AppData%\Microsoft\Windows\Start Menu\Programs*
@@ -141,3 +145,17 @@ To add a shortcut to the start menu:
 - set as target *powershell.exe "& '<path-of-script>\wsl-emacs.ps1'
 
 Note the weird *"&* on the command-line.
+
+
+** A note on security
+
+Since you can run any command from the windows command-line as root, the current logged in person has full access to anything in the WSL Linux machines. As such there is not a big hole added by adding your linux password somewhere securely in your account files such as the startup script.
+
+This does not mean you should not have secure passwords, as your linux box can expose its ports (not by default but just assume they are) and allow e.g. ssh access. Since I assume a lot of WSL2 hosts will be used fast and loose as a development box, there is a good chance that sooner or later a port is opened for reasons.
+
+So I would not worry too much your linux box password is exposed in the emacs startup script as long as it is hard enough and not used anywhere else. If you'd like to get it from some secure vault on your PC or from your infrastructure, go for it.
+
+tldr;
+- use a strong password for your WSL box
+- do not reuse an existing password
+- secure your startup script so it is only readable by you.
