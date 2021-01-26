@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2021-01-26 Tue 23:09 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setting up Blogging with Emacs</title>
+<meta name="generator" content="Org mode">
+<meta name="author" content="Peter Tillemans">
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" href="css/site.css"
+  type="text/css"/>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="nav">
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="https://github.com/ptillemans">GitHub</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<header>
+<h1 class="title">Setting up Blogging with Emacs</h1>
+</header><nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org23e6282">1. Creating the blog project</a></li>
+<li><a href="#org41e8ffd">2. Configuring org-publish</a></li>
+<li><a href="#orgb5d564c">3. Make local testing easy</a></li>
+<li><a href="#org0e2d76c">4. Deploy to Github Pages</a></li>
+<li><a href="#org25e9b57">5. Setting up a Capture Template</a></li>
+<li><a href="#orgcbc290b">6. In use</a></li>
+<li><a href="#org7959062">7. References</a></li>
+</ul>
+</div>
+</nav>
+<p>
+I'd like to blog more notes on stuff I do and it would be nice to have
+a smooth workflow in my editor of choice.
+</p>
+
+<p>
+It is too late to explain a lot, but all these things were proudly found
+elsewhere. See the references list at the end of this post.
+</p>
+
+<div id="outline-container-org23e6282" class="outline-2">
+<h2 id="org23e6282"><span class="section-number-2">1</span> Creating the blog project</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+To deploy to github as a personal blog you have to create a repo in the form
+<b>&lt;username&gt;.github.io</b>. Since I name my projects the same as the repos the
+name was a quick choice.
+</p>
+
+<p>
+The structure is as follows:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">&lt;root&gt; -+- blog -+- posts -+- &lt;blog posts&gt;
+        |        +- org-template -+- &lt;templates&gt;
+        |        +- css -+- &lt;css files&gt;
+        +- public -+- &lt;built website&gt;
+        +- .github -+- workflow --- main.yml  &lt;github actions&gt;
+        +- publish.el
+        +- Makefile  &lt;local develop actions&gt;
+
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org41e8ffd" class="outline-2">
+<h2 id="org41e8ffd"><span class="section-number-2">2</span> Configuring org-publish</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This is what the <b>publish.el</b> file is for.
+</p>
+
+<p>
+Prepare some snippets for the HTML pages
+</p>
+
+<p>
+First off, a link to the CSS:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(<span style="font-weight: bold;">setq</span> website-html-head <span style="font-style: italic;">"&lt;link rel=\"stylesheet\" href=\"css/site.css\"</span>
+<span style="font-style: italic;">  type=\"text/css\"/&gt;"</span>)
+</pre>
+</div>
+
+<p>
+Let's also add a navigation menu at the top of each page:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(<span style="font-weight: bold;">setq</span> website-html-preamble
+      <span style="font-style: italic;">"&lt;div class=\"nav\"&gt;</span>
+<span style="font-style: italic;">&lt;ul&gt;</span>
+<span style="font-style: italic;">&lt;li&gt;&lt;a href=\"/\"&gt;Home&lt;/a&gt;&lt;/li&gt;</span>
+<span style="font-style: italic;">&lt;li&gt;&lt;a href=\"https://github.com/ptillemans\"&gt;GitHub&lt;/a&gt;&lt;/li&gt;</span>
+<span style="font-style: italic;">&lt;/ul&gt;</span>
+<span style="font-style: italic;">&lt;/div&gt;"</span>)
+</pre>
+</div>
+
+<p>
+And a footer :
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(<span style="font-weight: bold;">setq</span> website-html-postamble <span style="font-style: italic;">"&lt;div class=\"footer\"&gt; Copyright 2020 %a (%v</span>
+<span style="font-style: italic;">  HTML).&lt;br&gt; Last updated %C.&lt;br&gt; Built with %c.  &lt;/div&gt;"</span>)
+</pre>
+</div>
+
+<p>
+And now we can all tie it together by creating the <b>org-publish-project-alist</b>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(<span style="font-weight: bold;">setq</span> org-publish-project-alist
+      `((<span style="font-style: italic;">"posts"</span>
+
+         <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">configure project structure</span>
+         <span style="font-weight: bold;">:base-directory</span> <span style="font-style: italic;">"blog/posts/"</span>
+         <span style="font-weight: bold;">:base-extension</span> <span style="font-style: italic;">"org"</span>
+         <span style="font-weight: bold;">:publishing-directory</span> <span style="font-style: italic;">"public/"</span>
+         <span style="font-weight: bold;">:recursive</span> t
+         <span style="font-weight: bold;">:publishing-function</span> org-html-publish-to-html
+
+         <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">configure index creation</span>
+         <span style="font-weight: bold;">:auto-sitemap</span> t
+         <span style="font-weight: bold;">:sitemap-title</span> <span style="font-style: italic;">"Blog Index"</span>
+         <span style="font-weight: bold;">:sitemap-filename</span> <span style="font-style: italic;">"index.org"</span>
+         <span style="font-weight: bold;">:sitemap-style</span> tree
+         <span style="font-weight: bold;">:sitemap-file-entry-format</span> <span style="font-style: italic;">"%d - %t"</span>
+         <span style="font-weight: bold;">:sitemap-sort-files</span> anti-chronologically
+
+         <span style="font-weight: bold;">:html-doctype</span> <span style="font-style: italic;">"html5"</span>
+         <span style="font-weight: bold;">:html-html5-fancy</span> t
+         <span style="font-weight: bold;">:html-head</span> ,website-html-head
+         <span style="font-weight: bold;">:html-preamble</span> ,website-html-preamble
+         <span style="font-weight: bold;">:html-postamble</span> ,website-html-postamble
+
+         <span style="font-weight: bold;">:author</span> <span style="font-style: italic;">"Peter Tillemans"</span>
+         <span style="font-weight: bold;">:email</span> <span style="font-style: italic;">"pti@snamellit.com"</span>
+         <span style="font-weight: bold;">:with-creator</span> t)
+
+        (<span style="font-style: italic;">"blog-static"</span>
+         <span style="font-weight: bold;">:base-directory</span> <span style="font-style: italic;">"blog/posts/"</span>
+         <span style="font-weight: bold;">:base-extension</span> <span style="font-style: italic;">"png</span><span style="font-weight: bold; font-style: italic;">\\</span><span style="font-weight: bold; font-style: italic;">|</span><span style="font-style: italic;">jpg</span><span style="font-weight: bold; font-style: italic;">\\</span><span style="font-weight: bold; font-style: italic;">|</span><span style="font-style: italic;">gif</span><span style="font-weight: bold; font-style: italic;">\\</span><span style="font-weight: bold; font-style: italic;">|</span><span style="font-style: italic;">pdf</span><span style="font-weight: bold; font-style: italic;">\\</span><span style="font-weight: bold; font-style: italic;">|</span><span style="font-style: italic;">mp3</span><span style="font-weight: bold; font-style: italic;">\\</span><span style="font-weight: bold; font-style: italic;">|</span><span style="font-style: italic;">ogg</span><span style="font-weight: bold; font-style: italic;">\\</span><span style="font-weight: bold; font-style: italic;">|</span><span style="font-style: italic;">swf"</span>
+         <span style="font-weight: bold;">:publishing-directory</span> <span style="font-style: italic;">"public_html/"</span>
+         <span style="font-weight: bold;">:recursive</span> t
+         <span style="font-weight: bold;">:publishing-function</span> org-publish-attachment)
+
+        (<span style="font-style: italic;">"css"</span>
+         <span style="font-weight: bold;">:base-directory</span> <span style="font-style: italic;">"blog/css/"</span>
+         <span style="font-weight: bold;">:base-extension</span> <span style="font-style: italic;">"css"</span>
+         <span style="font-weight: bold;">:publishing-directory</span> <span style="font-style: italic;">"public/css"</span>
+         <span style="font-weight: bold;">:publishing-function</span> org-publish-attachment
+         <span style="font-weight: bold;">:recursive</span> t)
+
+        (<span style="font-style: italic;">"all"</span> <span style="font-weight: bold;">:components</span> (<span style="font-style: italic;">"posts"</span> <span style="font-style: italic;">"css"</span> <span style="font-style: italic;">"blog-static"</span>))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb5d564c" class="outline-2">
+<h2 id="orgb5d564c"><span class="section-number-2">3</span> Make local testing easy</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The commands to build the blog are not hard, but hard to remember
+and hard to type.
+</p>
+
+<p>
+Let's make a makefile to help:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-makefile"><span style="font-weight: bold;">.PHONY</span>: all publish publish_no_init
+
+<span style="font-weight: bold;">all</span>: publish
+
+<span style="font-weight: bold;">publish</span>: publish.el
+        <span style="font-weight: bold; text-decoration: underline;">@</span>echo <span style="font-style: italic;">"Publishing... with current Emacs configurations."</span>
+        emacs --batch --load publish.el --funcall org-publish-all
+
+<span style="font-weight: bold;">publish_no_init</span>:
+        <span style="font-weight: bold; text-decoration: underline;">@</span>echo <span style="font-style: italic;">"Publishing... with --no-init"</span>
+        emacs --batch --no-init --load publish.el --funcall org-publish-all
+
+<span style="font-weight: bold;">clean</span>:
+        <span style="font-weight: bold; text-decoration: underline;">@</span>echo <span style="font-style: italic;">"Cleaning up..."</span>
+        rm -rf public
+        <span style="font-weight: bold; text-decoration: underline;">@</span>rm -rvf *.elc
+        <span style="font-weight: bold; text-decoration: underline;">@</span>rm -rvf public
+        <span style="font-weight: bold; text-decoration: underline;">@</span>rm -rvf ~/.org-timestamps/*
+
+<span style="font-weight: bold;">serve</span>: publish
+        <span style="font-weight: bold; text-decoration: underline;">@</span>echo <span style="font-style: italic;">"Serving site"</span>
+        python -m http.server --directory public
+</pre>
+</div>
+
+<p>
+For local testing just do:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">$ make clean serve
+</pre>
+</div>
+
+<p>
+If the only change is new content then not cleaning is much faster.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0e2d76c" class="outline-2">
+<h2 id="org0e2d76c"><span class="section-number-2">4</span> Deploy to Github Pages</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+A slightly modified version of the initial workflow will do the publishing:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-yaml"># This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@master
+	with:
+	  fetch-depth: 1
+
+      - name: build
+	uses: docker://iquiw/alpine-emacs
+	if: github.event.deleted == false
+	with:
+	  args: emacs --batch --load publish.el --funcall org-publish-all
+
+
+      - name: deploy
+	uses: peaceiris/actions-gh-pages@v1.1.0
+	if: success()
+	env:
+	  GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+	  PUBLISH_BRANCH: gh-pages
+	  PUBLISH_DIR: ./public
+</pre>
+</div>
+
+<p>
+Note that you need to put a secret <b>PERSONAL<sub>ACCESS</sub><sub>TOKEN</sub></b> with an access token which has basic push access to the repo to push the built site to the gh-pages branch.
+</p>
+
+<p>
+For the emacs call, I just copied the command from the <b>Makefile</b>.
+</p>
+
+<p>
+After a push the site is usually up by the time I check, say in about a minute.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org25e9b57" class="outline-2">
+<h2 id="org25e9b57"><span class="section-number-2">5</span> Setting up a Capture Template</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+This proved to be the hardest part to get working.
+</p>
+
+<p>
+I am using <b>Doom Emacs</b> so I wrap everything in <b>with-eval-after-load</b>.
+</p>
+
+<p>
+The challenge was that the title is needed to create the slug for the filename and then again as title for the post. So my ugly solution is to stuff it in a variable and get the variable back in the template.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(<span style="font-weight: bold;">with-eval-after-load</span> 'org-capture
+  (<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">snamellit/blog-title</span> <span style="font-style: italic;">"test-title"</span>)
+
+  (<span style="font-weight: bold;">setq</span> snamellit-blog-template <span style="font-style: italic;">"#+title: %(progn snamellit-blog-title)</span>
+<span style="font-style: italic;">#+date: %t</span>
+<span style="font-style: italic;">#+author: Peter Tillemans</span>
+<span style="font-style: italic;">#+email: pti@snamellit.com</span>
+
+<span style="font-style: italic;">%?"</span>)
+
+  (<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">snamellit/capture-blog-post-file</span> ()
+    (<span style="font-weight: bold;">let*</span> ((title (read-from-minibuffer <span style="font-style: italic;">"Post Title: "</span>))
+           (slug (replace-regexp-in-string <span style="font-style: italic;">"[</span><span style="font-style: italic;">^</span><span style="font-style: italic;">a-z0-9]+"</span> <span style="font-style: italic;">"-"</span> (downcase title))))
+      (<span style="font-weight: bold;">setq</span> snamellit/blog-title title)
+      (format <span style="font-style: italic;">"~/Projects/ptillemans.github.io/blog/posts/%s-%s.org"</span>
+              (format-time-string <span style="font-style: italic;">"%Y-%m-%d"</span> (current-time))
+              slug)))
+
+  (add-to-list 'org-capture-templates
+               '(<span style="font-style: italic;">"b"</span> <span style="font-style: italic;">"Blog Post"</span> plain
+                 (file snamellit/capture-blog-post-file)
+                 (file <span style="font-style: italic;">"~/.doom.d/tpl-blog-post.org"</span>))))
+
+</pre>
+</div>
+
+<p>
+The <b>tpl-blog-post.org</b> template file :
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">#+title: <span style="font-weight: bold;">%(progn snamellit/blog-title)</span>
+#+date: %&lt;%Y-%m-%d&gt;
+
+%?
+</pre>
+</div>
+
+<p>
+It is very minimal and I'd like to keep it that way.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcbc290b" class="outline-2">
+<h2 id="orgcbc290b"><span class="section-number-2">6</span> In use</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+To create a blog post
+</p>
+<ul class="org-ul">
+<li>SPC-X b   will create the post</li>
+<li>Give a title for the post</li>
+<li>A template file is created (unfortunately in plain text)</li>
+<li>Enter the idea, hook and save with C-c C-c</li>
+<li>Open the org file with SPC-f r (open recent file)</li>
+<li>Flesh out the post using org-mode goodness</li>
+<li>save, commit and push to git</li>
+</ul>
+
+<p>
+After push the github action will bring it live
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7959062" class="outline-2">
+<h2 id="org7959062"><span class="section-number-2">7</span> References</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+Following links were useful in setting this up:
+</p>
+
+<ul class="org-ul">
+<li><a href="https://opensource.com/article/20/3/blog-emacs">How to blog with Emacs Org mode</a></li>
+<li><a href="https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/about-github-pages">GitHub Pages documentation</a></li>
+<li><a href="https://orgmode.org/org.html">The Org Mode Manual</a></li>
+<li><a href="https://meganrenae21.github.io/Meg-in-Progress/posts/blogging-with-org-mode.html">The Meg in Progress post on building a static blog with org-mode.</a></li>
+<li><a href="https://thenybble.de/projects/orgsite.html">Website with org-mode</a></li>
+<li><a href="https://rkallos.com/blog/2017/01/02/static-site-generation-with-org-mode/">Richard Kallos' post on site generation with Org Mode</a></li>
+<li><a href="https://www.brautaset.org/articles/2017/blogging-with-org-mode.html">Blogging with Org mode</a></li>
+<li><a href="https://storax.github.io/blog/2016/05/02/org-capture-tricks/">Org Capture Tricks from Storax</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer"> Copyright 2020 Peter Tillemans (<a href="http://validator.w3.org/check?uri=referer">Validate</a>
+  HTML).<br> Last updated 2021-01-26 Tue 23:09.<br> Built with <a href="https://www.gnu.org/software/emacs/">Emacs</a> 26.3 (<a href="https://orgmode.org">Org</a> mode 9.1.9).  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2021-01-26 Tue 23:09 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Running Emacs with WSL2+xrdp</title>
+<meta name="generator" content="Org mode">
+<meta name="author" content="Peter Tillemans">
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" href="css/site.css"
+  type="text/css"/>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="nav">
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="https://github.com/ptillemans">GitHub</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<header>
+<h1 class="title">Running Emacs with WSL2+xrdp</h1>
+</header><nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgc714962">1. Why</a></li>
+<li><a href="#orga7a155c">2. Plan</a></li>
+<li><a href="#org67b74e8">3. Installation</a>
+<ul>
+<li><a href="#orgb054bbc">3.1. Install xrdp</a></li>
+<li><a href="#orgbb97529">3.2. Installing DBUS replacement</a></li>
+<li><a href="#org401defb">3.3. Automatic start of Emacs only</a></li>
+<li><a href="#org3390f68">3.4. Installing Xfce4 (Optional)</a></li>
+</ul>
+</li>
+<li><a href="#org1733859">4. Using this from Windows</a>
+<ul>
+<li><a href="#orgf4a3fa1">4.1. Starting from the command-line</a></li>
+<li><a href="#orgf023d09">4.2. Accepting the certificate</a></li>
+<li><a href="#org32b0c04">4.3. Automatic login</a></li>
+<li><a href="#org35e62ad">4.4. A note on security</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<div id="outline-container-orgc714962" class="outline-2">
+<h2 id="orgc714962"><span class="section-number-2">1</span> Why</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+I have been using Emacs in WSL2 using an X server running in Windows and that works fine as long as long as the computer does not go to sleep. When the computer goes to sleep, the X connection is cut and the emacs process crashes. I like to just have my emacs session available so I can continue where I was last time and I like my computer to go to sleep when I not use it because Global Warming.
+</p>
+
+
+<ul class="org-ul">
+<li>start emacs in WSL2 in GUI mode</li>
+<li>can be reconnected after sleep</li>
+<li>copy-paste works transparent</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga7a155c" class="outline-2">
+<h2 id="orga7a155c"><span class="section-number-2">2</span> Plan</h2>
+<div class="outline-text-2" id="text-2">
+<ul class="org-ul">
+<li>use <b>xrdp</b> as remote desktop is built into windows</li>
+<li>configure xrdp to startup in WSL2</li>
+<li>run emacs in a remote desktop session</li>
+</ul>
+</div>
+</div>
+
+
+
+
+
+<div id="outline-container-org67b74e8" class="outline-2">
+<h2 id="org67b74e8"><span class="section-number-2">3</span> Installation</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-orgb054bbc" class="outline-3">
+<h3 id="orgb054bbc"><span class="section-number-3">3.1</span> Install xrdp</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+<a href="https://wiki.archlinux.org/index.php/xrdp">Arch wiki page for xrdp</a>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">$ yay -S xrdp xorgxrdp-git
+</pre>
+</div>
+
+<p>
+We do not have systemd in WSL2 so I started the daemons manually with a small script */usr/local/bin/start-xrdp:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/bin/</span><span style="font-weight: bold;">bash</span>
+sudo /usr/sbin/xrdp
+sudo /usr/sbin/xrdp-sesman
+</pre>
+</div>
+
+<p>
+We can now start it with <b>start-xrdp</b> from the bash command line or using <b>wsl -u root /usr/local/bin/start-xrdp</b>. If not running as root (or recently authenticated sudo access) it will ask for your Linux password to allow running as <b>sudo</b>.
+</p>
+
+<p>
+Trying to connect lets me login but after a timeout is shows a dialog box telling me Xorg did not want to start. This is confirmed in the <b>/var/log/xrdp-sesman.log</b> file.
+</p>
+
+<p>
+The root cause is that I cannot read properly because if I could, I would have read to add <i>allowed\<sub>users</sub>=anybody</i> to the <b>/etc/X11/Xwrapper.config</b> file to allow <b>Xorg</b> to be started by regular users like me instead of only <b>root</b>.
+</p>
+
+<p>
+Once that is there I get a nice black screen after login.
+</p>
+
+<p>
+Note: Each time WSL2 restarts it gets a random ip address. So I created
+a small script to dig out the actual ip address out of the output of <b>ip address</b> :
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/bin/</span><span style="font-weight: bold;">bash</span>
+ip address show dev eth0 | grep <span style="font-style: italic;">"inet "</span> | sed -e <span style="font-style: italic;">'s/.*inet \([^/]*\).*/\1/'</span>
+</pre>
+</div>
+
+<p>
+Which I gave the original name of <b>/usr/local/bin/ip-address</b> (do not forget to <code>chmod +x /usr/local/bin/ip-address</code> to make it executable) so I can easily call it from powershell with <code>wsl ip-address</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbb97529" class="outline-3">
+<h3 id="orgbb97529"><span class="section-number-3">3.2</span> Installing DBUS replacement</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+DBUS is the de-facto GNU/Linux desktop communication bus which glues all kind of GUI apps together. I do not know if it is directly used by Emacs or any of the extensions I use, however it reduces the amount of errors and warnings.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">$ yay -S dbus-x11
+</pre>
+</div>
+
+<p>
+allows xfce and other programs to feel happy and display the desktop with an emacs window. Now just maximizing the window and the goal is reached.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org401defb" class="outline-3">
+<h3 id="org401defb"><span class="section-number-3">3.3</span> Automatic start of Emacs only</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+In order to just start emacs maximized in a single remote desktop window we only need to start it as the only program in the XSession. This of course also means there is no chrome on the X-Window or the ability to lauch other programs outside of Emacs. This is exactly how I like it.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">file:~/.xinitrc</span>
+emacs -mm
+</pre>
+</div>
+
+<p>
+If you rather have a full desktop environment, see further.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3390f68" class="outline-3">
+<h3 id="org3390f68"><span class="section-number-3">3.4</span> Installing Xfce4 (Optional)</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+I'd rather have something more lightweight as window manager, but I have
+experience with Xfce4 in Arch and I also like something which just works.
+</p>
+
+<p>
+I only intend to run emacs in the window however having something a bit more capable which works can help me debug the environment. (I have some font things to sort out too&#x2026;)
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">$ sudo pacman -S xfce4
+</pre>
+</div>
+
+<p>
+and then start it form <b>~/.xinitrc</b>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">emacs &amp;
+startxfce4
+</pre>
+</div>
+
+<p>
+If you have skipped the <b>DBUS</b> setup above, this hangs while the <b>~/.xorgxrdp.log</b> file is filling up with errors complaining about missing connection to dbus.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1733859" class="outline-2">
+<h2 id="org1733859"><span class="section-number-2">4</span> Using this from Windows</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-orgf4a3fa1" class="outline-3">
+<h3 id="orgf4a3fa1"><span class="section-number-3">4.1</span> Starting from the command-line</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+We can start remote desktop session using
+</p>
+
+<pre class="example">
+&gt;_ mstsc /v:$(wsl ip-address) /h:2560 /w:1600
+</pre>
+
+<p>
+This works, however we get now a prompt to accept the certificate and we still need to login. We can make this smoother
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf023d09" class="outline-3">
+<h3 id="orgf023d09"><span class="section-number-3">4.2</span> Accepting the certificate</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+You can accept the certificate and let remote desktop add it to your certificate stores. This solves this interruption.
+</p>
+
+<p>
+However, this still happens each time the ip address changes.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org32b0c04" class="outline-3">
+<h3 id="org32b0c04"><span class="section-number-3">4.3</span> Automatic login</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Start <b>remote desktop</b> GUI using the search or from the start menu.
+</p>
+
+<p>
+Fill in the ip address returned by <code>wsl ip-address</code> and your username. Enable the flag to store your password. Login and save the configuration as e.g. <b>emacs.rdp</b>.
+</p>
+
+<p>
+We can now start emacs using
+</p>
+
+<pre class="example">
+&gt;_ cmdkey /generic:$(wsl ip-address) /user:&lt;username&gt; /pass:&lt;password&gt;
+&gt;_ mstsc /v:$(wsl ip-address)
+</pre>
+
+<p>
+We can assemble this is a small script <b>wsl-emacs.ps1</b> somewhere on your path:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-powershell">wsl -u root /usr/local/bin/start-xrdp
+$address = $(wsl ip-address)
+$userName = "pti"
+$userPwd = "shht!Secret"
+cmdkey /generic:$address /user:$userName /pass:$userPwd
+mstsc /v:$address
+</pre>
+</div>
+
+<p>
+Which allows us to start our <b>wsl-emacs</b> from powershell or as a startup application with a shortcut. It ensures the <b>xrdp</b> daemons are running (they are idempotent, so the script can be run multiple times), then the credentials are created so they can be picked up by remote desktop.
+</p>
+
+<p>
+To add a shortcut to the start menu:
+</p>
+<ul class="org-ul">
+<li>Type Win-R and open <b>%AppData%\Microsoft\Windows\Start Menu\Programs</b></li>
+<li>create a new shortcut</li>
+<li>set as target *powershell.exe "&amp; '&lt;path-of-script&gt;\wsl-emacs.ps1'</li>
+</ul>
+
+<p>
+Note the weird <b>"&amp;</b> on the command-line.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org35e62ad" class="outline-3">
+<h3 id="org35e62ad"><span class="section-number-3">4.4</span> A note on security</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+Since you can run any command from the windows command-line as root, the current logged in person has full access to anything in the WSL Linux machines. As such there is not a big hole added by adding your linux password somewhere securely in your account files such as the startup script.
+</p>
+
+<p>
+This does not mean you should not have secure passwords, as your linux box can expose its ports (not by default but just assume they are) and allow e.g. ssh access. Since I assume a lot of WSL2 hosts will be used fast and loose as a development box, there is a good chance that sooner or later a port is opened for reasons.
+</p>
+
+<p>
+So I would not worry too much your linux box password is exposed in the emacs startup script as long as it is hard enough and not used anywhere else. If you'd like to get it from some secure vault on your PC or from your infrastructure, go for it.
+</p>
+
+<p>
+tldr;
+</p>
+<ul class="org-ul">
+<li>use a strong password for your WSL box</li>
+<li>do not reuse an existing password</li>
+<li>secure your startup script so it is only readable by you.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer"> Copyright 2020 Peter Tillemans (<a href="http://validator.w3.org/check?uri=referer">Validate</a>
+  HTML).<br> Last updated 2021-01-26 Tue 23:09.<br> Built with <a href="https://www.gnu.org/software/emacs/">Emacs</a> 26.3 (<a href="https://orgmode.org">Org</a> mode 9.1.9).  </div>
+</div>
+</body>
+</html>
